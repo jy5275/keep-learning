@@ -1,0 +1,28 @@
+---
+- hosts: local
+  remote_user: root
+  vars:   # 定义变量
+    epic: true
+    bug_trigger: true
+    cur_time: "{{ lookup('pipe', 'date \"+%y%m%d%H%M%S\"')}}"  # 运行时再执行
+  tasks:
+    - name: test conn
+      ping: 
+
+    - name: Error copy playbook.yml
+      copy: src=playbook.yml dest=/tmp/playbook.yml  # 参数
+      when: bug_trigger is defined and bug_trigger     # 触发条件
+      ignore_errors: yes
+      register: cp_result   # 执行结果保存为变量
+
+    - name: Debug1
+      debug: msg={{ cp_result }} #_{{ index }}  # 打印输出变量
+      # when: cp_result.rc is defined and cp_result.rc != 0
+
+    - name: Config items for 1st mesos-lb
+      copy: content={{ item['value'] }} dest=/tmp/ansible_test_{{ item['target'] }}_{{ cur_time }}
+      with_items:                 # Loop, pick one item at a time sequentially
+        - { 'value': 'jiang', 'target': 'one' }
+        - { 'value': 'yan', 'target': 'two' }
+
+

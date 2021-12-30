@@ -1,0 +1,40 @@
+---
+# https://tecadmin.net/how-to-install-go-on-ubuntu-20-04/
+- hosts: local
+  remote_user: root
+  vars: 
+    go_1_16: go1.16.4.linux-amd64.tar.gz
+  tasks:
+    - name: Download
+      local_action: shell wget https://dl.google.com/go/go1.16.4.linux-amd64.tar.gz
+      # connection: local
+
+    - name: test conn
+      ping: 
+
+    - name: Prepare
+      shell: rm -rf /workspace && mkdir -p /workspace /root/go
+
+    - name: Copy go binary
+      copy: src={{ go_1_16 }} dest=/workspace/{{ go_1_16 }}
+
+    - name: Unpack go binary
+      shell: cd /workspace && tar -xzvf {{ go_1_16 }}
+
+    - name: Setup Golang root dir
+      shell: rm -rf /usr/local/go && mv /workspace/go /usr/local/go
+
+    - name: Copy source code
+      copy: src=producer.go dest=/workspace/producer.go
+    
+    - name: Go Mod Init
+      shell: cd /workspace && /usr/local/go/bin/go mod init example.com && /usr/local/go/bin/go mod tidy
+      environment:
+        GOROOT: /usr/local/go
+        GOPATH: /root/go
+
+    - name: Run producer
+      shell: cd /workspace && /usr/local/go/bin/go run producer.go
+      environment:
+        GOROOT: /usr/local/go
+        GOPATH: /root/go

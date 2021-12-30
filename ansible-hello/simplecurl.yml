@@ -1,0 +1,31 @@
+---
+# https://tecadmin.net/how-to-install-go-on-ubuntu-20-04/
+- hosts: sg-vm
+  # remote_user: root
+  tasks:
+    - name: test conn
+      ping: 
+
+    - name: Record pre-reload log length for 1st mesos-lb
+      shell: wc /home/ld-yan_jiang/newf | awk '{print $1}'
+      register: log_len_before_reload
+
+    # - name: curl Google
+    #   uri: 
+    #     url: https://www.google.com/
+    #     method: HEAD
+    
+    - name: append log
+      shell: "echo 'emerg: hhhhhhhh' >> /home/ld-yan_jiang/newf" 
+
+    - name: Extract emerg log for reload for 1st mesos-lb
+      shell: "tail -n $((`wc /home/ld-yan_jiang/newf | awk '{print $1}'` - {{log_len_before_reload.stdout}})) /home/ld-yan_jiang/newf | grep 'emerg'"
+      register: grep_output
+      failed_when: false
+
+    - name: Check emerg log for 1st mesos-lb
+      when: grep_output.rc == 0
+      debug:
+        msg: "{{grep_output.stdout}}"
+      failed_when: grep_output.rc == 0
+
