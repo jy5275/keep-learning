@@ -6,26 +6,34 @@
     - name: test conn
       ping: 
 
-    - name: Record pre-reload log length for 1st mesos-lb
-      shell: wc /home/ld-yan_jiang/newf | awk '{print $1}'
-      register: log_len_before_reload
+    - name: Record time
+      shell: "date '+%s'"
+      register: time_before_reload
 
     # - name: curl Google
     #   uri: 
     #     url: https://www.google.com/
     #     method: HEAD
     
-    - name: append log
-      shell: "echo 'emerg: hhhhhhhh' >> /home/ld-yan_jiang/newf" 
+    - name: Get Nginx up time
+      uri: 
+        url: "http://10.129.98.209:9111/get_up_time" 
+        method: "GET"
+        return_content: yes
+      register: curl_result
 
-    - name: Extract emerg log for reload for 1st mesos-lb
-      shell: "tail -n $((`wc /home/ld-yan_jiang/newf | awk '{print $1}'` - {{log_len_before_reload.stdout}})) /home/ld-yan_jiang/newf | grep 'emerg'"
-      register: grep_output
-      failed_when: false
+    - set_fact: 
+        worker_up_time: "{{ curl_result.content.split(\"\n\")[0] }}"
 
-    - name: Check emerg log for 1st mesos-lb
-      when: grep_output.rc == 0
+    - name: Check Nginx up time
+      fail:
+        msg: "Nginx reload failed. Worker start time: {{ worker_up_time }}"
+      when: worker_up_time < time_before_reload.stdout
+
+    - name: Debug1
       debug:
-        msg: "{{grep_output.stdout}}"
-      failed_when: grep_output.rc == 0
+        msg: "{{ time_before_reload.stdout }}"
 
+    - name: Debug2
+      debug:
+        msg: "{{ worker_up_time }}"

@@ -15,5 +15,6 @@ Remove(i, seq) ==
 
 \* Try to evaluate this using the VSCode action
 x == Remove(3, <<1,2,3,4>>)
+y == (1..3) \X {"a", "b"}
 
 ====

@@ -1,0 +1,9 @@
+*.old
+*.out
+*.tex
+*.pdf
+*.dvi
+*.fp
+*.st
+
+states/

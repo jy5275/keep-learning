@@ -12,12 +12,14 @@ Transfer:
   if alice_account >= money then
     A: alice_account := alice_account - money;
        bob_account := bob_account + money;
+       print alice_account;
+       print bob_account;
 end if;
 C: assert alice_account >= 0;
 end process
 
 end algorithm *)
-\* BEGIN TRANSLATION (chksum(pcal) = "2739b956" /\ chksum(tla) = "aa75782f")
+\* BEGIN TRANSLATION (chksum(pcal) = "b89831f8" /\ chksum(tla) = "ca29be1c")
 \* Label Transfer of process Transfer at line 12 col 3 changed to Transfer_
 VARIABLES alice_account, bob_account, account_total, pc, money
 
@@ -43,12 +45,14 @@ Transfer_(self) == /\ pc[self] = "Transfer_"
 A(self) == /\ pc[self] = "A"
            /\ alice_account' = alice_account - money[self]
            /\ bob_account' = bob_account + money[self]
+           /\ PrintT(alice_account')
+           /\ PrintT(bob_account')
            /\ pc' = [pc EXCEPT ![self] = "C"]
            /\ UNCHANGED << account_total, money >>
 
 C(self) == /\ pc[self] = "C"
            /\ Assert(alice_account >= 0, 
-                     "Failure of assertion at line 16, column 4.")
+                     "Failure of assertion at line 18, column 4.")
            /\ pc' = [pc EXCEPT ![self] = "Done"]
            /\ UNCHANGED << alice_account, bob_account, account_total, money >>
 
