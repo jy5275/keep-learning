@@ -68,29 +68,18 @@ CheckLocalFor == \E self \in ProcSet: CheckLocal(self)
 SetLocalFor == \E self \in ProcSet: SetLocal(self)
 ReturnResultFor == \E self \in ProcSet: ReturnResult(self)
 
-T1Proceed == ReadRedis(t1) \/ SetRedis(t1) \/ CheckLocal(t1) \/ SetLocal(t1) \/ ReturnResult(t1) \/ Again(t1)
-T2Proceed == ReadRedis(t2) \/ SetRedis(t2) \/ CheckLocal(t2) \/ SetLocal(t2) \/ ReturnResult(t2) \/ Again(t2)
-T3Proceed == ReadRedis(t3) \/ SetRedis(t3) \/ CheckLocal(t3) \/ SetLocal(t3) \/ ReturnResult(t3) \/ Again(t3)
+Proceed(t) == ReadRedis(t) \/ SetRedis(t) \/ CheckLocal(t) \/ SetLocal(t) \/ ReturnResult(t) \/ Again(t)
 
 Next == \/ RedisExpire
-        \/ T1Proceed
-        \/ T2Proceed
-        \/ T3Proceed
+        \/ \E t \in ProcSet: Proceed(t)
         \* \/ Terminating
         \* \/ \E self \in ProcSet: Again(self)
 
 \* Termination == <>(\A self \in ProcSet: pc[self] = "Done")
-Fairness == /\ SF_vars(ReadRedis(t1)) /\ SF_vars(ReadRedis(t2)) /\ SF_vars(ReadRedis(t3))
-            /\ SF_vars(SetRedis(t1)) /\ SF_vars(SetRedis(t2)) /\ SF_vars(SetRedis(t3))
-            /\ SF_vars(CheckLocal(t1)) /\ SF_vars(CheckLocal(t2)) /\ SF_vars(CheckLocal(t3))
-            /\ SF_vars(SetLocal(t1)) /\ SF_vars(SetLocal(t2)) /\ SF_vars(SetLocal(t3))
-            /\ SF_vars(ReturnResult(t1)) /\ SF_vars(ReturnResult(t2)) /\ SF_vars(ReturnResult(t3))
 
-F2 == /\ SF_vars(T1Proceed)
-      /\ SF_vars(T2Proceed)
-      /\ SF_vars(T3Proceed)
+FairForEveryone == \A t \in ProcSet: SF_vars(Proceed(t))
 
-Spec == /\ Init /\ [][Next]_vars /\ F2
+Spec == /\ Init /\ [][Next]_vars /\ FairForEveryone
 
 symm == Permutations({r1, r2, r3}) \union Permutations({t1, t2, t3})
 
