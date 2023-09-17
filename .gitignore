@@ -1,2 +1,7 @@
 *.tar.gz
 *.so
+.vscode/
+.idea/
+*.bin
+*.o
+
